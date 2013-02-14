@@ -6,11 +6,13 @@
 #include "mysh_common.h"
 #include "mysh_execute.h"
 
+#define NOTHING
+
 static void mysh_execute_foreground(const char *cmd)
 {
 	int pid;
 
-	char *command = calloc(strlen(cmd) + 1, sizeof(char));
+	char command[MAX_CMD_LEN];
 	char *args[MAX_CMD_GRP];
 
 	int nargs;
@@ -30,26 +32,39 @@ static void mysh_execute_foreground(const char *cmd)
 
 	/* parent process */
 	else
+	{
+		signal(SIGCHLD, SIG_DFL);
 		waitpid(pid, NULL, 0);
+		signal(SIGCHLD, SIG_IGN);
+	}
 }
 
 static void mysh_execute_background(const char *cmd)
 {
 	int pid;
 
-	char *command = calloc(strlen(cmd) + 1, sizeof(char));
+	char command[MAX_CMD_LEN];
 	char *args[MAX_CMD_GRP];
 
-	int nargs = mysh_parse;
+	int nargs;
 
+	strcpy(command, cmd);
+	nargs = mysh_parse_args(command, args);
+	args[nargs - 1] = NULL;
+
+	pid = fork();
+
+	/* fork() error */
 	if (pid == -1)
 		fatal("fork() error");
 
+	/* child process */
 	else if (pid == 0)
-		mysh_execute_program(cmd);
+		execvp(args[0], args);
 
+	/* parent process */
 	else
-		signal(SIGCHLD, SIG_IGN);
+		NOTHING;
 }
 
 static void mysh_execute_cd(const char *path)
@@ -97,7 +112,6 @@ void mysh_execute_command(const char *cmd)
 	/* background session */
 	else if (strncmp(args[nargs - 1], "&", 1) == 0)
 	{
-		args[nargs - 1] = NULL;
 		mysh_execute_background(cmd);
 	}
 	/* foreground session */

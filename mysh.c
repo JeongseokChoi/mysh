@@ -14,6 +14,7 @@ AUTHOR
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -29,6 +30,10 @@ int main()
 	int nread, ncmd;
 
 	int i;
+
+	signal(SIGCHLD, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+	signal(SIGINT, SIG_IGN);
 
 	while (TRUE)
 	{
