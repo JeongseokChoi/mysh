@@ -28,7 +28,12 @@ static void mysh_execute_foreground(const char *cmd)
 
 	/* child process */
 	else if (pid == 0)
+	{
 		execvp(args[0], args);
+		printf("mysh: command \'%s\' cannot found.\n", args[0]);
+		exit(1);
+	}
+		
 
 	/* parent process */
 	else
@@ -60,7 +65,10 @@ static void mysh_execute_background(const char *cmd)
 
 	/* child process */
 	else if (pid == 0)
+	{
 		execvp(args[0], args);
+		printf("mysh: command \'%s\' cannot found.\n", args[0]);
+	}
 
 	/* parent process */
 	else
@@ -93,10 +101,11 @@ void mysh_execute_command(const char *cmd)
 	strcpy(command, cmd);
 	nargs = mysh_parse_args(command, args);
 
-	/* DEBUG */
+	/* DEBUG
 	printf("total %d arguments.\n", nargs);
 	for (i = 0; i < nargs; i++)
 		printf("args[%d] = %s\n", i, args[i]);
+	*/
 
 	/* exit */
 	if (strcmp(args[0], "exit") == 0)
